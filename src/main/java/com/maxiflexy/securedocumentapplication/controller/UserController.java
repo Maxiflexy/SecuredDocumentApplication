@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -22,6 +24,7 @@ import static org.springframework.http.HttpStatus.OK;
 public class UserController {
 
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
 
     @PostMapping("/register")
     public ResponseEntity<Response> saveUser(
@@ -39,6 +42,12 @@ public class UserController {
         userService.verifyAccountKey(key);
         return ResponseEntity.ok().body(getResponse(servletRequest, emptyMap(),
                 "Account verified.", OK));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Response> loginUser(@RequestBody UserRequest userRequest){
+        authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(userRequest.getEmail(), userRequest.getPassword()));
+        return ResponseEntity.ok().build();
     }
 
     private URI getUri() {
